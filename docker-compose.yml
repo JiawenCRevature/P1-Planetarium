@@ -1,0 +1,49 @@
+version: '1'
+
+services:
+  planetarium:
+    image: jiawen142/planetarium:file
+    container_name: planetarium
+    ports:
+      - 8080:8080
+    environment:
+      - VARIABLE=VALUE
+    volumes:
+      - ./logs/:/logs/
+
+  loki:
+    image: grafana/loki:latest 
+    container_name: logging-loki
+    ports:
+      - 3100:3100
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: logging-promtail
+    volumes:
+      - ./configs/promtail-config.yml:/etc/promtail/promtail-config.yml #<- this one goes into container
+      # configuration I made:config saved in container
+      - ./logs/staticLogs.log:/var/log/staticLogs.log # log we want to save:log in promtail make sure staticLogs name match
+    command: "--config.file=/etc/promtail/promtail-config.yml" #<- promtail.yml file need to match the one on the container
+
+  grafana:
+    image: grafana/grafana:latest # default username/password:admin/admin
+    container_name: logging-grafana
+    # volumes:
+    #   - grafana-data:/var/lib/grafana
+    # persisting grafana settings
+    ports:
+      - 3000:3000
+    depends_on:
+      - loki #ensures loki is setup before Grafana tries to interface with it
+
+  prometheus:
+    image: prom/prometheus:latest # think of this as your database for your metrics over time
+    ports:
+      - 9090:9090
+    volumes:
+      # - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/prometheus-config.yml:/etc/prometheus/prometheus-config.yml # passing the directory instead of just the config file for prometheus
+      # - prometheus-data:/prometheus
+    container_name: logging-prometheus
+    command: "--config.file=/etc/prometheus/prometheus-config.yml"
