@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.revature.planetarium.Entities.User;
 
 import com.revature.planetarium.exception.EntityNotFound;
+import com.revature.planetarium.exception.IntentationallyBreak;
 import com.revature.planetarium.service.UserService;
 
 
@@ -33,6 +34,7 @@ public class AuthenticationController {
         authLogger.error(e.getLocalizedMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
+
     @PostMapping("/login")
     public ResponseEntity<String> login(HttpSession httpSession, @RequestBody User user){
         User u = userService.findByUserName(user.getUsername());
@@ -55,8 +57,7 @@ public class AuthenticationController {
 
     @GetMapping("/break")
     public ResponseEntity<String> breakServer(){
-        authLogger.error("Intentionally break the server");
-        return new ResponseEntity<>("500", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new IntentationallyBreak("Break this server intentionally");
     }
 }
 
