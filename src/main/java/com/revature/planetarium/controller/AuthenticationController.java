@@ -55,6 +55,7 @@ public class AuthenticationController {
 
     @GetMapping("/break")
     public ResponseEntity<String> breakServer(){
+        authLogger.error("Intentionally break the server");
         return new ResponseEntity<>("500", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
